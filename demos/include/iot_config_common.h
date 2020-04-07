@@ -47,7 +47,8 @@
 #define IOT_BUILD_TESTS    ( 0 )
 
 /* Logging puts function. */
-#define IotLogging_Puts( str )    configPRINTF( ( "%s\r\n", str ) )
+//#define IotLogging_Puts( str )    configPRINTF( ( "%s\r\n", str ) )
+#define IotLogging_Puts( str ) 
 
 /* Enable asserts in libraries by default. */
 #ifndef IOT_METRICS_ENABLE_ASSERTS

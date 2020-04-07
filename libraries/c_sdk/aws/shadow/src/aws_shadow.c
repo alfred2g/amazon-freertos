@@ -54,7 +54,8 @@
 
 /* Configure logging for Shadow. */
 #if shadowconfigENABLE_DEBUG_LOGS == 1
-    #define Shadow_debug_printf( X )    configPRINTF( X )
+    //#define Shadow_debug_printf( X )    configPRINTF( X )
+    #define Shadow_debug_printf( X )
 #else
     #define Shadow_debug_printf( X )
 #endif

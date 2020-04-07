@@ -62,7 +62,8 @@
 #include "mbedtls/oid.h"
 
 /* Default FreeRTOS API for console logging. */
-#define DEV_MODE_KEY_PROVISIONING_PRINT( X )    vLoggingPrintf X
+//#define DEV_MODE_KEY_PROVISIONING_PRINT( X )    vLoggingPrintf X
+#define DEV_MODE_KEY_PROVISIONING_PRINT( X )
 
 /* For writing log lines without a prefix. */
 extern void vLoggingPrint( const char * pcFormat );

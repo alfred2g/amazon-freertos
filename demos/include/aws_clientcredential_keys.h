@@ -128,6 +128,5 @@
  * "...base64 data...\n"\
  * "-----END RSA PRIVATE KEY-----\n"
  */
-#endif
 
 #endif /* AWS_CLIENT_CREDENTIAL_KEYS_H */

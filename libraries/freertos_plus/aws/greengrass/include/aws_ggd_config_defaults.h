@@ -77,7 +77,8 @@
 #endif
 
 #ifndef ggdconfigPRINT
-    #define ggdconfigPRINT    vLoggingPrintf
+    //#define ggdconfigPRINT    vLoggingPrintf
+    #define ggdconfigPRINT
 #endif
 
 #endif /* ifndef _AWS_GREENGRASS_CONFIG_DEFAULT_H_ */
