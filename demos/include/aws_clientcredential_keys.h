@@ -37,10 +37,6 @@
  * "...base64 data...\n"\
  * "-----END CERTIFICATE-----\n"
  */
-#define keyCLIENT_CERTIFICATE_PEM                   ""
-
-#ifndef AWS_CLIENT_CREDENTIAL_KEYS_H
-#define AWS_CLIENT_CREDENTIAL_KEYS_H
 
 #include <stdint.h>
 
@@ -132,6 +128,6 @@
  * "...base64 data...\n"\
  * "-----END RSA PRIVATE KEY-----\n"
  */
-#define keyCLIENT_PRIVATE_KEY_PEM                   ""
+#endif
 
 #endif /* AWS_CLIENT_CREDENTIAL_KEYS_H */
