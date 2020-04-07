@@ -279,12 +279,10 @@ static void prvCreatePrintSocket( void * pvParameter1,
 void vLoggingPrintf( const char * pcFormat,
                      ... )
 {
-    /*
     va_list xArgs;
     va_start( xArgs, pcFormat );
     prvLoggingPrintf( pdTRUE, pcFormat, xArgs );
     va_end( xArgs );
-    */
 }
 /*-----------------------------------------------------------*/
 
