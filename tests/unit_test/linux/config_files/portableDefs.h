@@ -1,7 +1,8 @@
 #ifndef PORTABLE_DEFS_H_
 #define PORTABLE_DEFS_H_
 
-#include </usr/include/errno.h>
+//#include </usr/include/errno.h>
+#include </Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/errno.h>
 
 /* redefine EWOULDBLOCK to be different than EAGAIN to broaden the test coverage
  * and cover more cases

@@ -23,6 +23,15 @@
                 "${3rdparty_dir}/lwip/contrib/ports/unix/lib"
                 "${3rdparty_dir}/lwip/contrib/ports/unix/port/include"
             )
+    set_target_properties(secure_sockets_mock PROPERTIES
+                COMPILE_FLAGS "-Wall -fPIC -ggdb3 -Og \
+                    -fprofile-arcs -ftest-coverage -fprofile-generate \
+                    -include portableDefs.h -Wno-unused-but-set-variable"
+                LINK_FLAGS "-fPIC -fprofile-arcs -ftest-coverage \
+                    -fprofile-generate -ggdb3 -Og -pthread "
+                ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
+                POSITION_INDEPENDENT_CODE ON
+            )
 
     target_compile_definitions(secure_sockets_mock PUBLIC
                 LWIP_COMPAT_SOCKETS=1
@@ -59,27 +68,35 @@
                     -fprofile-arcs -ftest-coverage -fprofile-generate \
                     -include portableDefs.h -Wno-unused-but-set-variable"
                 LINK_FLAGS "-fPIC -fprofile-arcs -ftest-coverage \
-                    -fprofile-generate -ggdb3 -Og"
+                    -fprofile-generate -ggdb3 -Og -pthread"
                 ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
+                POSITION_INDEPENDENT_CODE ON
             )
 
     add_dependencies(secure_sockets_real secure_sockets_mock)
     target_link_libraries(secure_sockets_real PUBLIC
+		#	  -lunity
+		#	  -lcmock
                           -lsecure_sockets_mock
                           -lgcov
             )
     list(APPEND link_list
-                -lsecure_sockets_mock
-                libsecure_sockets_real.a
-                libutils.so
+                secure_sockets_real
+                secure_sockets_mock
+		utils
+		pthread
             )
     list(APPEND dep_list
                 secure_sockets_real
+                secure_sockets_mock
             )
     create_test(secure_sockets_utest
                 secure_sockets_utest.c
                 "${link_list}"
                 "${dep_list}"
+            )
+    target_link_directories(secure_sockets_utest PUBLIC
+	        ${CMAKE_BINARY_DIR}/lib
             )
     target_include_directories(secure_sockets_utest PUBLIC
                 ../include

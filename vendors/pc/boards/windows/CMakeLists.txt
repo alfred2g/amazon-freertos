@@ -1,3 +1,9 @@
+if (AFR_ENABLE_UNIT_TESTS)
+    enable_testing()
+    add_subdirectory("tests/unit_test/windows")
+    return()
+endif ()
+
 set(afr_ports_dir "${CMAKE_CURRENT_LIST_DIR}/ports")
 set(board_demos_dir "${CMAKE_CURRENT_LIST_DIR}/aws_demos")
 set(board_tests_dir "${CMAKE_CURRENT_LIST_DIR}/aws_tests")

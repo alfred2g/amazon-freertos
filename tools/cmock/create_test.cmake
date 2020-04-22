@@ -20,6 +20,7 @@ function(create_test test_name test_src link_list dep_list)
             LINK_FLAGS "-Og -ggdb3 \
                 -Wl,-rpath,${CMAKE_BINARY_DIR}/lib \
                 -Wl,-rpath,${CMAKE_CURRENT_BINARY_DIR}/lib"
+                POSITION_INDEPENDENT_CODE ON
         )
     target_include_directories(${test_name} PUBLIC
                                ${mocks_dir}
@@ -51,7 +52,7 @@ endfunction()
 # places the generated source file in the build directory
 function(create_mock_list mock_name mock_list)
     set(mocks_dir "${CMAKE_CURRENT_BINARY_DIR}/mocks")
-    add_library(${mock_name} SHARED)
+    add_library(${mock_name} STATIC)
     foreach (mock_file IN LISTS mock_list)
         get_filename_component(mock_file_abs
                                ${mock_file}
@@ -84,8 +85,8 @@ function(create_mock_list mock_name mock_list)
                                ${mocks_dir}
             )
     set_target_properties(${mock_name} PROPERTIES
-                        COMPILE_FLAGS "-ggdb3 -Og -fPIC"
-                        LINK_FLAGS "-ggdb3 -fPIC -Og"
+                        COMPILE_FLAGS "-ggdb3 -Og -fPIC -Wl,--unresolved-symbols=ignore-in-object-files"
+                        LINK_FLAGS "-ggdb3 -fPIC -Og -Wl,--unresolved-symbols=ignore-all"
                         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
                         POSITION_INDEPENDENT_CODE ON
             )
