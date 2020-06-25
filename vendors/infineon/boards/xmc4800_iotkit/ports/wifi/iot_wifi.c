@@ -44,6 +44,10 @@
 
 #define CONNECT_BIT    (1 << 0)
 #define DISCONNECT_BIT (1 << 1)
+#define WIFI_TLS_INDEX 0
+
+static void  WIFI_SetLastError(BaseType_t reason);
+static WIFIErrorReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason);
 
 SemaphoreHandle_t xWiFiSemaphoreHandle; /**< Wi-Fi module semaphore. */
 const TickType_t xSemaphoreWaitTicks = pdMS_TO_TICKS( wificonfigMAX_SEMAPHORE_WAIT_TIME_MS );
@@ -416,6 +420,7 @@ WIFIReturnCode_t WIFI_Ping( uint8_t * pucIPAddr,
     {
       uint32_t time;
       ret = esp_ping(host_name, &time, 1);
+      WIFI_SetLastError(ret);
       if ( ret != espOK )
       {
   	    status = eWiFiFailure;
@@ -582,4 +587,73 @@ WIFIReturnCode_t WIFI_RegisterNetworkStateChangeEventCallback( IotNetworkStateCh
 {
     /** Needs to implement dispatching network state change events **/
     return eWiFiNotSupported;
+}
+
+static WIFIErrorReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason)
+{
+    WIFIErrorReason_t reason;
+    switch (reason)
+    {
+        case ESP_OK:
+            reason = 0;
+            break;
+        case ESP_FAIL:                 /*  -1      !< Generic esp_err_t code indicating failure */
+        case ESP_ERR_NO_MEM:           /*  0x101   !< Out of memory */
+        case ESP_ERR_INVALID_ARG:      /*  0x102   !< Invalid argument */
+        case ESP_ERR_INVALID_STATE:    /*  0x103   !< Invalid state */
+        case ESP_ERR_INVALID_SIZE:     /*  0x104   !< Invalid size */
+        case ESP_ERR_NOT_FOUND:        /*  0x105   !< Requested resource not found */
+        case ESP_ERR_NOT_SUPPORTED:    /*  0x106   !< Operation or feature not supported */
+        case ESP_ERR_TIMEOUT:          /*  0x107   !< Operation timed out */
+        case ESP_ERR_INVALID_RESPONSE: /*  0x108   !< Received response was invalid */
+        case ESP_ERR_INVALID_CRC:      /*  0x109   !< CRC or checksum was invalid */
+        case ESP_ERR_INVALID_VERSION:  /*  0x10A   !< Version was invalid */
+        case ESP_ERR_INVALID_MAC:      /*  0x10B   !< MAC address was invalid */
+        case ESP_ERR_WIFI_NOT_INIT:    /*!< WiFi driver was not installed by esp_wifi_init */
+        case ESP_ERR_WIFI_NOT_STARTED: /*!< WiFi driver was not started by esp_wifi_start */
+        case ESP_ERR_WIFI_NOT_STOPPED: /*!< WiFi driver was not stopped by esp_wifi_stop */
+        case ESP_ERR_WIFI_IF:
+        case ESP_ERR_WIFI_MODE:
+        case ESP_ERR_WIFI_STATE:
+        case ESP_ERR_WIFI_CONN:
+        case ESP_ERR_WIFI_NVS:
+        case ESP_ERR_WIFI_MAC:
+        case ESP_ERR_WIFI_SSID:
+        case ESP_ERR_WIFI_PASSWORD:
+        case ESP_ERR_WIFI_WAKE_FAIL:
+        case ESP_ERR_WIFI_WOULD_BLOCK:
+        case ESP_ERR_WIFI_NOT_CONNECT:
+        case ESP_ERR_WIFI_POST:
+        case ESP_ERR_WIFI_INIT_STATE:
+        case ESP_ERR_WIFI_STOP_STATE:
+            reason = eWiFiNotOK;
+            break;
+        case ESP_ERR_WIFI_TIMEOUT:
+            reason = eWiFiOperationTimeout;
+        default:
+            reason = eWiFiUnknown;
+            break;
+
+    }
+    return reason;
+}
+static void  WIFI_SetLastError(BaseType_t reason)
+{
+#if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_TLS_INDEX)
+    WIFIErrorReason_t error = WIFI_mapVendorToWIFIReason(reason);
+    vTaskSetThreadLocalStoragePointer(NULL, WIFI_TLS_INDEX ,( void * ) error);
+#endif
+}
+
+WIFIErrorReason_t WIFI_GetLastError()
+{
+    WIFIErrorReason_t  reason = eWiFiUnsupported
+
+#if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_TLS_INDEX)
+
+    reason = (WIFIErrorReason_t) pvTaskGetThreadLocalStoragePointer( NULL, WIFI_TLS_INDEX )
+
+#endif
+
+    return reason;
 }

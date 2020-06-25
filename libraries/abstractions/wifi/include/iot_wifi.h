@@ -55,6 +55,20 @@ typedef enum
 } WIFIReturnCode_t;
 
 /**
+ * @brief Erro reason code denoting API status.
+ *
+ * @ingroup WiFi_datatypes_enums
+ */
+typedef enum
+{
+    eWiFiOK= 0,
+    eWiFiUnsupported = 1,
+    eWiFiUnknown = 2,
+    eWiFiNotOK = 3,
+    eWiFiOperationTimeout = 4,
+} WIFIErrorReason_t;
+
+/**
  * @brief Wi-Fi Security types.
  *
  * @ingroup WiFi_datatypes_enums
@@ -544,5 +558,12 @@ WIFIReturnCode_t WIFI_RegisterNetworkStateChangeEventCallback( IotNetworkStateCh
 BaseType_t WIFI_IsConnected( void );
 /* @[declare_wifi_wifi_isconnected] */
 
+/**
+ * @brief get the error reason from the last call to a wifi function on the same
+ * task
+ *
+ * @return the error reason
+ */
+WIFIErrorReason_t WIFI_GetLastError();
 
 #endif /* _AWS_WIFI_H_ */
