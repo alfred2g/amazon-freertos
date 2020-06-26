@@ -601,9 +601,9 @@ static WIFIFailReason_t WIFI_mapVendorToWIFIReason(espr_t error)
         case espOK:
             reason = eWiFiOK;
             break;
-        case    espOKIGNOREMORE;                            /*!< Function succedded, should continue as espOK but ignore sending more data. This result is possible on connection data receive callback */
+        case    espOKIGNOREMORE:                            /*!< Function succedded, should continue as espOK but ignore sending more data. This result is possible on connection data receive callback */
         case    espERR:
-        case    espPARERR,                                  /*!< Wrong parameters on function call */
+        case    espPARERR:                                  /*!< Wrong parameters on function call */
         case    espERRMEM:                                  /*!< Memory error occurred */
         case    espCONT:                                    /*!< There is still some command to be processed in current command */
         case    espCLOSED:                                  /*!< Connection just closed */
@@ -642,7 +642,7 @@ WIFIFailReason_t WIFI_GetLastError()
 
 #if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_THREAD_LOCAL_STORAGE_INDEX)
 
-    reason = (WIFIFailReason_t) pvTaskGetThreadLocalStoragePointer( NULL, WIFI_THREAD_LOCAL_STORAGE_INDEX )
+    reason = (WIFIFailReason_t) pvTaskGetThreadLocalStoragePointer( NULL, WIFI_THREAD_LOCAL_STORAGE_INDEX );
     vTaskSetThreadLocalStoragePointer( NULL, WIFI_THREAD_LOCAL_STORAGE_INDEX, ( void * ) eWiFiUnknown );
 
 #endif
