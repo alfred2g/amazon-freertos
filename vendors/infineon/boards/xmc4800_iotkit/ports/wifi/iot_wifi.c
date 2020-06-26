@@ -45,8 +45,8 @@
 #define CONNECT_BIT    (1 << 0)
 #define DISCONNECT_BIT (1 << 1)
 
-static void  WIFI_SetLastError(BaseType_t reason);
-static WIFIFailReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason);
+static void  WIFI_SetLastError(espr_t reason);
+static WIFIFailReason_t WIFI_mapVendorToWIFIReason(espr_t reason);
 
 SemaphoreHandle_t xWiFiSemaphoreHandle; /**< Wi-Fi module semaphore. */
 const TickType_t xSemaphoreWaitTicks = pdMS_TO_TICKS( wificonfigMAX_SEMAPHORE_WAIT_TIME_MS );
@@ -405,7 +405,7 @@ WIFIReturnCode_t WIFI_Ping( uint8_t * pucIPAddr,
 {
   char host_name[20];
   WIFIReturnCode_t status = eWiFiSuccess;
-  uint32_t ret;
+  espr_t ret;
 
   /* Check params */
   if ((pucIPAddr == NULL) || (usCount == 0))
@@ -593,55 +593,42 @@ WIFIReturnCode_t WIFI_RegisterNetworkStateChangeEventCallback( IotNetworkStateCh
     return eWiFiNotSupported;
 }
 
-static WIFIFailReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason)
+static WIFIFailReason_t WIFI_mapVendorToWIFIReason(espr_t error)
 {
     WIFIFailReason_t reason;
-    switch (reason)
+    switch (error)
     {
-        case ESP_OK:
-            reason = 0;
+        case espOK:
+            reason = eWiFiOK;
             break;
-        case ESP_FAIL:                 /*  -1      !< Generic esp_err_t code indicating failure */
-        case ESP_ERR_NO_MEM:           /*  0x101   !< Out of memory */
-        case ESP_ERR_INVALID_ARG:      /*  0x102   !< Invalid argument */
-        case ESP_ERR_INVALID_STATE:    /*  0x103   !< Invalid state */
-        case ESP_ERR_INVALID_SIZE:     /*  0x104   !< Invalid size */
-        case ESP_ERR_NOT_FOUND:        /*  0x105   !< Requested resource not found */
-        case ESP_ERR_NOT_SUPPORTED:    /*  0x106   !< Operation or feature not supported */
-        case ESP_ERR_TIMEOUT:          /*  0x107   !< Operation timed out */
-        case ESP_ERR_INVALID_RESPONSE: /*  0x108   !< Received response was invalid */
-        case ESP_ERR_INVALID_CRC:      /*  0x109   !< CRC or checksum was invalid */
-        case ESP_ERR_INVALID_VERSION:  /*  0x10A   !< Version was invalid */
-        case ESP_ERR_INVALID_MAC:      /*  0x10B   !< MAC address was invalid */
-        case ESP_ERR_WIFI_NOT_INIT:    /*!< WiFi driver was not installed by esp_wifi_init */
-        case ESP_ERR_WIFI_NOT_STARTED: /*!< WiFi driver was not started by esp_wifi_start */
-        case ESP_ERR_WIFI_NOT_STOPPED: /*!< WiFi driver was not stopped by esp_wifi_stop */
-        case ESP_ERR_WIFI_IF:
-        case ESP_ERR_WIFI_MODE:
-        case ESP_ERR_WIFI_STATE:
-        case ESP_ERR_WIFI_CONN:
-        case ESP_ERR_WIFI_NVS:
-        case ESP_ERR_WIFI_MAC:
-        case ESP_ERR_WIFI_SSID:
-        case ESP_ERR_WIFI_PASSWORD:
-        case ESP_ERR_WIFI_WAKE_FAIL:
-        case ESP_ERR_WIFI_WOULD_BLOCK:
-        case ESP_ERR_WIFI_NOT_CONNECT:
-        case ESP_ERR_WIFI_POST:
-        case ESP_ERR_WIFI_INIT_STATE:
-        case ESP_ERR_WIFI_STOP_STATE:
+        case    espOKIGNOREMORE;                            /*!< Function succedded, should continue as espOK but ignore sending more data. This result is possible on connection data receive callback */
+        case    espERR:
+        case    espPARERR,                                  /*!< Wrong parameters on function call */
+        case    espERRMEM:                                  /*!< Memory error occurred */
+        case    espCONT:                                    /*!< There is still some command to be processed in current command */
+        case    espCLOSED:                                  /*!< Connection just closed */
+        case    espINPROG:                                  /*!< Operation is in progress */
+        case    espERRNOIP:                                 /*!< Station does not have IP address */
+        case    espERRNOFREECONN:                           /*!< There is no free connection available to start */
+        case    espERRPASS:                                 /*!< Invalid password for access point */
+        case    espERRNOAP:                                 /*!< No access point found with specific SSID and MAC address */
+        case    espERRCONNFAIL:                             /*!< Connection failed to access point */
+        case    espERRWIFINOTCONNECTED:                     /*!< Wifi not connected to access point */
+        case    espERRNODEVICE:                             /*!< Device is not present */
             reason = eWiFiNotOK;
             break;
-        case ESP_ERR_WIFI_TIMEOUT:
+        case    espERRCONNTIMEOUT:                          /*!< Timeout received when connection to access point */
+        case    espTIMEOUT:                                 /*!< Timeout occurred on command */
             reason = eWiFiOperationTimeout;
+            break;
         default:
             reason = eWiFiUnknown;
             break;
-
     }
     return reason;
 }
-static void  WIFI_SetLastError(BaseType_t reason)
+
+static void  WIFI_SetLastError(espr_t reason)
 {
 #if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_THREAD_LOCAL_STORAGE_INDEX)
     WIFIFailReason_t error = WIFI_mapVendorToWIFIReason(reason);
