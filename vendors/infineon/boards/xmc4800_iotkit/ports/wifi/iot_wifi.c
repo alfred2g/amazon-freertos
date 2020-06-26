@@ -405,7 +405,7 @@ WIFIReturnCode_t WIFI_Ping( uint8_t * pucIPAddr,
 {
   char host_name[20];
   WIFIReturnCode_t status = eWiFiSuccess;
-  espr_t ret;
+  espr_t ret = eWiFiUnknown;
 
   /* Check params */
   if ((pucIPAddr == NULL) || (usCount == 0))
@@ -449,7 +449,7 @@ WIFIReturnCode_t WIFI_GetIP( uint8_t * pucIPAddr )
 {
   esp_ip_t gw;
   esp_ip_t nm;
-  uint32_t ret;
+  uint32_t ret = eWiFiUnknown;
 
   WIFIReturnCode_t status = eWiFiFailure;
 
