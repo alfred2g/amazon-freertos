@@ -71,8 +71,9 @@
 #endif
 
 /* WIFI_Ping() test configurations. */
-#define testwifiPING_COUNT          3
-#define testwifiPING_INTERVAL_MS    10
+#define testwifiPING_COUNT            3
+#define testwifiPING_INTERVAL_MS      10
+#define testwifiPING_RETRY_TIMEOUT    3
 
 /* The WIFF_Ping() testing address is currently set to the echo server see
  * aws_test_tcp.h. */
@@ -1654,13 +1655,21 @@ TEST( Full_WiFi, AFQP_WiFiReset )
  */
 TEST( Full_WiFi, AFQP_WiFiPing )
 {
+    WIFIFailReason_t freason;
     WIFIReturnCode_t xWiFiStatus;
     uint32_t ulPingAddress = testwifiPING_ADDRESS;
+    uint8_t retries = 0;
 
     TEST_ASSERT( prvConnectAPTest() == pdPASS );
 
-    xWiFiStatus = WIFI_Ping( ( uint8_t * ) &ulPingAddress, testwifiPING_COUNT,
-                             testwifiPING_INTERVAL_MS );
+    do
+    {
+        xWiFiStatus = WIFI_Ping( ( uint8_t * ) &ulPingAddress, testwifiPING_COUNT,
+                                 testwifiPING_INTERVAL_MS );
+        freason = WIFI_GetLastError();
+    } while( ( freason == eWiFiOperationTimeout ) && ( retries++ < testwifiPING_RETRY_TIMEOUT ) );
+
+    TEST_ASSERT_EQUAL_INT( eWiFiOK, freason );
     TEST_WIFI_ASSERT_EQ_OPTIONAL_API( eWiFiSuccess, xWiFiStatus, xWiFiStatus );
 }
 

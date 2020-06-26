@@ -61,12 +61,12 @@ typedef enum
  */
 typedef enum
 {
-    eWiFiOK= 0,
+    eWiFiOK = 0,
     eWiFiUnsupported = 1,
     eWiFiUnknown = 2,
     eWiFiNotOK = 3,
     eWiFiOperationTimeout = 4,
-} WIFIErrorReason_t;
+} WIFIFailReason_t;
 
 /**
  * @brief Wi-Fi Security types.
@@ -560,10 +560,12 @@ BaseType_t WIFI_IsConnected( void );
 
 /**
  * @brief get the error reason from the last call to a wifi function on the same
- * task
+ *        task
  *
- * @return the error reason
+ * @returns the error reason
+ *
+ * @warning getting the last error clears the error code it becomes eWiFiUnknown
  */
-WIFIErrorReason_t WIFI_GetLastError();
+WIFIFailReason_t WIFI_GetLastError();
 
 #endif /* _AWS_WIFI_H_ */

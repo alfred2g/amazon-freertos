@@ -68,8 +68,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define configUSE_APPLICATION_TASK_TAG             1
 #define configUSE_COUNTING_SEMAPHORES              1
 #define configUSE_ALTERNATIVE_API                  0
-#define configNUM_THREAD_LOCAL_STORAGE_POINTERS    3      /* FreeRTOS+FAT requires 2 pointers if a CWD is supported. */
+#define configNUM_THREAD_LOCAL_STORAGE_POINTERS    4      /* FreeRTOS+FAT requires 2 pointers if a CWD is supported. */
 #define configRECORD_STACK_HIGH_ADDRESS            1
+
+#define WIFI_THREAD_LOCAL_STORAGE_INDEX            3
 
 /* Hook function related definitions. */
 #define configUSE_TICK_HOOK                        0

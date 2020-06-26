@@ -44,10 +44,9 @@
 
 #define CONNECT_BIT    (1 << 0)
 #define DISCONNECT_BIT (1 << 1)
-#define WIFI_TLS_INDEX 0
 
 static void  WIFI_SetLastError(BaseType_t reason);
-static WIFIErrorReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason);
+static WIFIFailReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason);
 
 SemaphoreHandle_t xWiFiSemaphoreHandle; /**< Wi-Fi module semaphore. */
 const TickType_t xSemaphoreWaitTicks = pdMS_TO_TICKS( wificonfigMAX_SEMAPHORE_WAIT_TIME_MS );
@@ -98,6 +97,7 @@ espr_t esp_callback_func(esp_cb_t* cb)
 
 WIFIReturnCode_t WIFI_On( void )
 {
+  WIFIFailReason_t freason = eWiFiUnknown;
   if (xIsWiFiInitialized == pdFALSE)
   {
     if (esp_init(esp_callback_func, 1) != espOK)
@@ -113,6 +113,8 @@ WIFIReturnCode_t WIFI_On( void )
     xSemaphoreGive(xWiFiSemaphoreHandle);
 
     xIsWiFiInitialized = pdTRUE;
+
+    vTaskSetThreadLocalStoragePointer(NULL, WIFI_THREAD_LOCAL_STORAGE_INDEX, ( void * ) freason);
   }
 
   return eWiFiSuccess;
@@ -403,7 +405,7 @@ WIFIReturnCode_t WIFI_Ping( uint8_t * pucIPAddr,
 {
   char host_name[20];
   WIFIReturnCode_t status = eWiFiSuccess;
-  int ret;
+  uint32_t ret;
 
   /* Check params */
   if ((pucIPAddr == NULL) || (usCount == 0))
@@ -420,12 +422,11 @@ WIFIReturnCode_t WIFI_Ping( uint8_t * pucIPAddr,
     {
       uint32_t time;
       ret = esp_ping(host_name, &time, 1);
-      WIFI_SetLastError(ret);
       if ( ret != espOK )
       {
-  	    status = eWiFiFailure;
+	    status = eWiFiFailure;
             ESP_CFG_DBG_OUT( "WIFI_Ping returning %d \r\n", ret );
-  	    break;
+	    break;
       }
 
       vTaskDelay(pdMS_TO_TICKS(ulIntervalMS));
@@ -439,7 +440,7 @@ WIFIReturnCode_t WIFI_Ping( uint8_t * pucIPAddr,
     status = eWiFiTimeout;
   }
 
-
+  WIFI_SetLastError(ret);
   return status;
 }
 /*-----------------------------------------------------------*/
@@ -448,6 +449,7 @@ WIFIReturnCode_t WIFI_GetIP( uint8_t * pucIPAddr )
 {
   esp_ip_t gw;
   esp_ip_t nm;
+  uint32_t ret;
 
   WIFIReturnCode_t status = eWiFiFailure;
 
@@ -459,7 +461,8 @@ WIFIReturnCode_t WIFI_GetIP( uint8_t * pucIPAddr )
   /* Acquire semaphore */
   if (xSemaphoreTake(xWiFiSemaphoreHandle, xSemaphoreWaitTicks) == pdTRUE)
   {
-    if (esp_sta_getip((esp_ip_t *)pucIPAddr, &gw, &nm, 0, 1) == espOK)
+    ret = esp_sta_getip((esp_ip_t *)pucIPAddr, &gw, &nm, 0, 1);
+    if (ret == espOK)
     {
       status = eWiFiSuccess;
     }
@@ -472,6 +475,7 @@ WIFIReturnCode_t WIFI_GetIP( uint8_t * pucIPAddr )
     status = eWiFiTimeout;
   }
 
+  WIFI_SetLastError(ret);
   return status;
 }
 /*-----------------------------------------------------------*/
@@ -589,9 +593,9 @@ WIFIReturnCode_t WIFI_RegisterNetworkStateChangeEventCallback( IotNetworkStateCh
     return eWiFiNotSupported;
 }
 
-static WIFIErrorReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason)
+static WIFIFailReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason)
 {
-    WIFIErrorReason_t reason;
+    WIFIFailReason_t reason;
     switch (reason)
     {
         case ESP_OK:
@@ -639,19 +643,20 @@ static WIFIErrorReason_t WIFI_mapVendorToWIFIReason(BaseType_t reason)
 }
 static void  WIFI_SetLastError(BaseType_t reason)
 {
-#if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_TLS_INDEX)
-    WIFIErrorReason_t error = WIFI_mapVendorToWIFIReason(reason);
-    vTaskSetThreadLocalStoragePointer(NULL, WIFI_TLS_INDEX ,( void * ) error);
+#if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_THREAD_LOCAL_STORAGE_INDEX)
+    WIFIFailReason_t error = WIFI_mapVendorToWIFIReason(reason);
+    vTaskSetThreadLocalStoragePointer(NULL, WIFI_THREAD_LOCAL_STORAGE_INDEX, ( void * ) error);
 #endif
 }
 
-WIFIErrorReason_t WIFI_GetLastError()
+WIFIFailReason_t WIFI_GetLastError()
 {
-    WIFIErrorReason_t  reason = eWiFiUnsupported
+    WIFIFailReason_t  reason = eWiFiUnsupported
 
-#if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_TLS_INDEX)
+#if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_THREAD_LOCAL_STORAGE_INDEX)
 
-    reason = (WIFIErrorReason_t) pvTaskGetThreadLocalStoragePointer( NULL, WIFI_TLS_INDEX )
+    reason = (WIFIFailReason_t) pvTaskGetThreadLocalStoragePointer( NULL, WIFI_THREAD_LOCAL_STORAGE_INDEX )
+    vTaskSetThreadLocalStoragePointer( NULL, WIFI_THREAD_LOCAL_STORAGE_INDEX, ( void * ) eWiFiUnknown );
 
 #endif
 
