@@ -638,7 +638,7 @@ static void  WIFI_SetLastError(espr_t reason)
 
 WIFIFailReason_t WIFI_GetLastError()
 {
-    WIFIFailReason_t  reason = eWiFiUnsupported
+    WIFIFailReason_t reason = eWiFiUnsupported;
 
 #if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 && configNUM_THREAD_LOCAL_STORAGE_POINTERS > WIFI_THREAD_LOCAL_STORAGE_INDEX)
 
