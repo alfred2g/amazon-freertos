@@ -669,7 +669,7 @@ int mbedtls_hardware_poll( void * data,
                            size_t * olen )
 {
     int lStatus = MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    int ret;
+    int16_t ret;
 
     /* Use the SimpleLink driver to get a hardware-derived seed for additional
      * PRNG entropy. */
