@@ -777,10 +777,6 @@ CK_RV PKCS11_PAL_DestroyObject( CK_OBJECT_HANDLE xHandle )
 
         PKCS11_PAL_GetObjectValueCleanup( pxObject, ulObjectLength );
     }
-    else
-    {
-        xResult = CKR_GENERAL_ERROR;
-    }
 
     return xResult;
 }
