@@ -669,17 +669,23 @@ int mbedtls_hardware_poll( void * data,
                            size_t * olen )
 {
     int lStatus = MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+    int ret;
 
     /* Use the SimpleLink driver to get a hardware-derived seed for additional
      * PRNG entropy. */
     *olen = len;
 
-    if( 0 == sl_NetUtilGet( SL_NETUTIL_TRUE_RANDOM,
-                            0,
-                            output,
-                            ( unsigned short int * ) olen ) )
+    ret = sl_NetUtilGet( SL_NETUTIL_TRUE_RANDOM,
+                         0,
+                         output,
+                         ( unsigned short int * ) olen );
+    if( ret == 0 )
     {
         lStatus = 0;
+    }
+    else
+    {
+        configPRINTF( ( "Failed to generate a random number error %d\n", ret ) );
     }
 
     return lStatus;
